@@ -111,6 +111,17 @@ async def control_handler(event):
         await event.reply("\n".join(lines))
         return
 
+    # تست شناسایی مقصد
+    if text.startswith("تست"):
+        parts = text.split()
+        target_id = int(parts[1]) if len(parts) > 1 else TARGET_PM_ID
+        try:
+            entity = await client.get_entity(target_id)
+            await event.reply(f"✅ شناسایی شد: {getattr(entity, 'first_name', '?')} (@{getattr(entity, 'username', '?')}) id={entity.id}")
+        except Exception as e:
+            await event.reply(f"❌ شناسایی نشد: {e}")
+        return
+
     # فرمان ناشناخته → نادیده
     return
 
@@ -203,13 +214,19 @@ async def main():
     log.info("چت کنترل: %s | کانال: %s | مقصد: %s", CONTROL_CHAT, CHAT_ID, TARGET_PM_ID)
     log.info("زمان‌بندی بر اساس Asia/Tehran")
 
+    # دریافت لیست چت‌ها برای پر کردن کش Telethon
+    log.info("در حال دریافت لیست چت‌ها برای شناسایی مقصد...")
+    await client.get_dialogs(limit=100)
+    log.info("لیست چت‌ها دریافت شد.")
+
     # تست رزولوشن مقصد
     try:
         entity = await client.get_entity(TARGET_PM_ID)
         log.info("✅ مقصد شناسایی شد: %s (id=%s)", getattr(entity, 'username', '?'), entity.id)
     except Exception as e:
-        log.error("❌ مقصد (id=%s) شناسایی نشد! اول به این آیدی از اکانتت پیام بده.", TARGET_PM_ID)
-        log.error("جزئیات خطا: %s", e)
+        log.error("❌ مقصد (id=%s) شناسایی نشد!", TARGET_PM_ID)
+        log.error("⚠️ از Saved Messages بنویس: تست %s", TARGET_PM_ID)
+        log.error("جزئیات: %s", e)
 
     await client.run_until_disconnected()
 
