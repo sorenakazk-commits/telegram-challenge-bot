@@ -122,6 +122,16 @@ async def control_handler(event):
             await event.reply(f"❌ شناسایی نشد: {e}")
         return
 
+    # پینگ - سنجش سرعت ارسال
+    if text == "پینگ":
+        import time
+        t0 = time.monotonic()
+        msg = await event.reply("🏓 ...")
+        t1 = time.monotonic()
+        latency_ms = round((t1 - t0) * 1000, 1)
+        await msg.edit(f"🏓 پونگ! تاخیر: {latency_ms}ms")
+        return
+
     # فرمان ناشناخته → نادیده
     return
 
