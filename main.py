@@ -202,6 +202,15 @@ async def main():
     log.info("ربات آنلاین شد: @%s (id=%s)", me.username, me.id)
     log.info("چت کنترل: %s | کانال: %s | مقصد: %s", CONTROL_CHAT, CHAT_ID, TARGET_PM_ID)
     log.info("زمان‌بندی بر اساس Asia/Tehran")
+
+    # تست رزولوشن مقصد
+    try:
+        entity = await client.get_entity(TARGET_PM_ID)
+        log.info("✅ مقصد شناسایی شد: %s (id=%s)", getattr(entity, 'username', '?'), entity.id)
+    except Exception as e:
+        log.error("❌ مقصد (id=%s) شناسایی نشد! اول به این آیدی از اکانتت پیام بده.", TARGET_PM_ID)
+        log.error("جزئیات خطا: %s", e)
+
     await client.run_until_disconnected()
 
 
