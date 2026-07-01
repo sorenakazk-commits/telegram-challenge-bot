@@ -141,8 +141,20 @@ async def channel_handler(event):
     try:
         await client.send_message(TARGET_PM_ID, text)
         log.info("✅ ارسال شد (armed): %s", text[:60])
+        await notify(f"✅ ارسال شد (مسلح): «{text}»")
     except Exception as e:
         log.error("خطا در ارسال: %s", e)
+        await notify(f"❌ خطا در ارسال مسلح: {e}")
+
+
+# --------------------------------------------------------------------------- #
+# ارسال پیام به Saved Messages برای اطلاع‌رسانی
+# --------------------------------------------------------------------------- #
+async def notify(text):
+    try:
+        await client.send_message("me", text)
+    except Exception as e:
+        log.error("خطا در ارسال نوتیفیکیشن: %s", e)
 
 
 # --------------------------------------------------------------------------- #
@@ -150,6 +162,7 @@ async def channel_handler(event):
 # --------------------------------------------------------------------------- #
 async def schedule_send(target_time, word):
     try:
+        log.info("زمان‌بندی فعال: «%s» برای %s", word, target_time.strftime("%H:%M:%S"))
         # تا ۰.۵ ثانیه قبل با sleep، سپس busy-wait برای دقت
         while True:
             now = datetime.now(TEHRAN)
@@ -161,11 +174,17 @@ async def schedule_send(target_time, word):
             else:
                 await asyncio.sleep(0.01)
 
+        log.info("رسید به زمان هدف، در حال ارسال...")
         await client.send_message(TARGET_PM_ID, word)
         log.info("✅ ارسال راس ساعت: %s", word)
+        await notify(f"✅ ارسال راس ساعت انجام شد: «{word}»")
     except asyncio.CancelledError:
         log.info("زمان‌بندی لغو شد")
+        await notify(f"❌ زمان‌بندی «{word}» لغو شد.")
         raise
+    except Exception as e:
+        log.error("خطا در ارسال راس ساعت: %s", e)
+        await notify(f"❌ خطا در ارسال «{word}»: {e}")
     finally:
         scheduled_info["word"] = None
         scheduled_info["time"] = None
